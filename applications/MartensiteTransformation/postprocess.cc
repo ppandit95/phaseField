@@ -76,7 +76,7 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 		dealii::Tensor<2, dim, dealii::VectorizedArray<double> > sfts;
 		for (unsigned int i=0; i<dim; i++){
 		for (unsigned int j=0; j<dim; j++){
-			sfts1[i][j] = constV(sfts_linear[i][j])*n1;
+			sfts[i][j] = constV(sfts_linear[i][j])*n1;
 		}
 		}
 
