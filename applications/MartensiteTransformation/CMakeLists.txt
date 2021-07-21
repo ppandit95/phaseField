@@ -32,7 +32,7 @@ ADD_CUSTOM_TARGET(release
   COMMENT "Switch CMAKE_BUILD_TYPE to Release"
   )
 
-ADD_CUSTOM_TARGET(run COMMAND MartensiteTransformation
+ADD_CUSTOM_TARGET(run COMMAND main
   COMMENT "Run with ${CMAKE_BUILD_TYPE} configuration"
   )
 
@@ -57,9 +57,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         #set(DEAL_II_CXX_FLAGS_RELEASE "${DEAL_II_CXX_FLAGS_RELEASE} -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-comment -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable")
 endif()
 
-ADD_EXECUTABLE(MartensiteTransformation MartensiteTransformation.cc )
+ADD_EXECUTABLE(main main.cc )
 
-DEAL_II_SETUP_TARGET(MartensiteTransformation)
+DEAL_II_SETUP_TARGET(main)
 
 set(cmd "cmake")
 set(arg "CMakeLists.txt")
@@ -73,9 +73,9 @@ EXECUTE_PROCESS(COMMAND ${cmd}
 		WORKING_DIRECTORY ${dir})
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-	TARGET_LINK_LIBRARIES(MartensiteTransformation ${CMAKE_SOURCE_DIR}/../../libprisms_pf.a)
+	TARGET_LINK_LIBRARIES(main ${CMAKE_SOURCE_DIR}/../../libprisms_pf.a)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "DebugRelease")
-	TARGET_LINK_LIBRARIES(MartensiteTransformation ${CMAKE_SOURCE_DIR}/../../libprisms_pf.a)
+	TARGET_LINK_LIBRARIES(main ${CMAKE_SOURCE_DIR}/../../libprisms_pf.a)
 else()
-	TARGET_LINK_LIBRARIES(MartensiteTransformation ${CMAKE_SOURCE_DIR}/../../libprisms_pf_debug.a)
+	TARGET_LINK_LIBRARIES(main ${CMAKE_SOURCE_DIR}/../../libprisms_pf_debug.a)
 endif()

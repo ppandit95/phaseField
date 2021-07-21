@@ -25,7 +25,7 @@ void variableAttributeLoader::loadPostProcessorVariableAttributes(){
     set_dependencies_value_term_RHS(1, "n1, grad(u)");
     set_dependencies_gradient_term_RHS(1, "");
 
-	set_output_integral         	(1,false);
+	set_output_integral         	(1,true);
 
 }
 
@@ -56,9 +56,8 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 
         // --- Setting the expressions for the terms in the postprocessing expressions ---
 
-		double B = 3.0*A + 12.0;
-		double C = 2.0*A + 12.0;
-		scalarvaluetype fV = 1.0 + constV(A/2)*n1*n1 - constV(B/3)*n1*n1*n1 + constV(C/4)*n1*n1*n1*n1;
+
+		scalarvalueType fV = constV(1.0) + constV(A/2)*n1*n1 - constV(B/3)*n1*n1*n1 + constV(C/4)*n1*n1*n1*n1;
 
         // Start calculating components of the energy density
         scalarvalueType total_energy_density = constV(0.0);
@@ -93,7 +92,6 @@ void customPDE<dim,degree>::postProcessedFields(const variableContainer<dim,degr
 		//compute stress
 		//S=C*(E-E0)
 		dealii::VectorizedArray<double> CIJ_combined[2*dim-1+dim/3][2*dim-1+dim/3];
-		dealii::Tensor<2,CIJ_tensor_size> CIJ_M = constV(1.1)*CIJ_A;
 		if (n_dependent_stiffness == true){
 			for (unsigned int i=0; i<2*dim-1+dim/3; i++){
 				for (unsigned int j=0; j<2*dim-1+dim/3; j++){

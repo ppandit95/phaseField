@@ -10,46 +10,42 @@ void customPDE<dim,degree>::setInitialCondition(const dealii::Point<dim> &p, con
     // Enter the function describing conditions for the fields at point "p".
     // Use "if" statements to set the initial condition for each variable
     // according to its variable index
+    
+	/* double center[4][3] = {{1.0/3.0,1.0/3.0,0.5},{2.0/3.0,2.0/3.0,0.5},{3.0/4.0,1.0/4.0,0.5},{1.0/4.0,3.0/4.0,0.5}};
+	double rad[4] = {userInputs.domain_size[0]/16.0, userInputs.domain_size[0]/16.0, userInputs.domain_size[0]/16.0, userInputs.domain_size[0]/16.0};
+	double orientation[4] = {1,1,1,1}; */
+	
+    double center[1][3] = {{1.0/2.0,1.0/2.0,1.0/2.0}};
+	double rad[1] = {userInputs.domain_size[0]/50.0};
+	double orientation[1] = {1};
+    
+    double dx=userInputs.domain_size[0]/((double) userInputs.subdivisions[0])/std::pow(2.0,userInputs.refine_factor);
+	double dist;
+	scalar_IC = 0.0;
 
-	  // Initial condition parameters
-      double x_denom = (1.0)*(1.0);
-      double y_denom = (8.0)*(8.0);
-      double z_denom = (8.0)*(8.0);
+		  
 
-	  double initial_interface_coeff = 0.08;
-	  double initial_radius = 1.0;
-	  double c_matrix = 1.0e-6;
-      double c_precip = 0.14;
+		  for (unsigned int i=0; i<1; i++){
+			  dist = 0.0;
+			  for (unsigned int dir = 0; dir < dim; dir++){
+				  dist += (p[dir]-center[i][dir]*userInputs.domain_size[dir])*(p[dir]-center[i][dir]*userInputs.domain_size[dir]);
+			  }
+			  dist = std::sqrt(dist);
 
-	  //set result equal to the structural order parameter initial condition
-	  double r=0.0;
-	  std::vector<double> ellipsoid_denoms;
-	  ellipsoid_denoms.push_back(x_denom);
-	  ellipsoid_denoms.push_back(y_denom);
-	  ellipsoid_denoms.push_back(z_denom);
+			  if (index == (orientation[i]-1)){
+				  scalar_IC +=	std::min(0.5*(1.0-std::tanh((dist-rad[i])/(dx))), 0.9);
+			  }
 
-	  for (unsigned int i=0; i<dim; i++){
-		  r += (p(i))*(p(i))/ellipsoid_denoms[i];
+		  }
+
+	      if (index ==1){
+	          for (unsigned int d=0; d<dim; d++){
+	              vector_IC(d) = 0.0;
+	          }
+	      }
+
+		  // --------------------------------------------------------------------------
 	  }
-	  r = sqrt(r);
-
-	  if (index==0){
-		  scalar_IC = 0.5*(c_precip-c_matrix)*(1.0-std::tanh((r-initial_radius)/(initial_interface_coeff))) + c_matrix;
-	  }
-      else if (index==1){
-          scalar_IC = 0.0;
-      }
-	  else if (index==2){
-		  scalar_IC = 0.5*(1.0-std::tanh((r-initial_radius)/(initial_interface_coeff)));
-	  }
-      else {
-          for (unsigned int d=0; d<dim; d++){
-              vector_IC(d) = 0.0;
-          }
-      }
-
-	  // --------------------------------------------------------------------------
-}
 
 // ===========================================================================
 // FUNCTION FOR NON-UNIFORM DIRICHLET BOUNDARY CONDITIONS

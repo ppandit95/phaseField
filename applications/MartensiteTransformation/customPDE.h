@@ -8,7 +8,7 @@ public:
 		c_dependent_misfit = false;
 		for (unsigned int i=0; i<dim; i++){
 			for (unsigned int j=0; j<dim; j++){
-				if (std::abs(sfts_linear1[i][j])>1.0e-12){
+				if (std::abs(sfts_linear[i][j])>1.0e-12){
 					c_dependent_misfit = true;
 				}
 			}
@@ -46,7 +46,7 @@ private:
 
     // Function to set the nucleation probability (in nucleation.h)
     #ifdef NUCLEATION_FILE_EXISTS
-    double getNucleationProbability(variableValueContainer variable_value, double dV) const;
+    double getNucleationProbability(variableValueContainer variable_value, double dV,dealii::Point<dim> p,unsigned int variable_index) const;
     #endif
 
 	// ================================================================
@@ -57,22 +57,20 @@ private:
 	// ================================================================
 	// Model constants specific to this subclass
 	// ================================================================
-    double A = userInputs.get_model_constant_double("A");
+   	 double A = userInputs.get_model_constant_double("A");
+    	 double B = 3.0*A + 12.0;
+    	 double C = 2.0*A + 12.0;
 	double Mn1V = userInputs.get_model_constant_double("Mn1V");
-
 	double ks = userInputs.get_model_constant_double("ks");
 	double kg = userInputs.get_model_constant_double("kg");
-
 	double G = userInputs.get_model_constant_double("G");
 	double L = userInputs.get_model_constant_double("L");
-
-
 	const static unsigned int CIJ_tensor_size =2*dim-1+dim/3;
 	dealii::Tensor<2,CIJ_tensor_size> CIJ_A = userInputs.get_model_constant_elasticity_tensor("CIJ_A");
-
+	dealii::Tensor<2,CIJ_tensor_size> CIJ_M = userInputs.get_model_constant_elasticity_tensor("CIJ_M");
 	dealii::Tensor<2,dim> sfts_linear = userInputs.get_model_constant_rank_2_tensor("sfts_linear");
 	bool n_dependent_stiffness = userInputs.get_model_constant_bool("n_dependent_stiffness");
-
+	bool c_dependent_misfit;
 
 
 

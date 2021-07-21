@@ -7,9 +7,9 @@ set Number of dimensions = 2
 # Set the length of the domain in all three dimensions
 # =================================================================================
 # Each axes spans from zero to the specified length
-set Domain size X = 12.5
-set Domain size Y = 12.5
-set Domain size Z = 12.5
+set Domain size X = 1.0e-06
+set Domain size Y = 1.0e-06
+set Domain size Z = 1.0e-06
 
 # =================================================================================
 # Set the element parameters
@@ -52,11 +52,11 @@ end
 # Set the time step parameters
 # =================================================================================
 # The size of the time step
-set Time step = 4.0e-5
+set Time step = 1.0e-4
 
 # The simulation ends when either the number of time steps is reached or the
 # simulation time is reached.
-set Number of time steps = 20000
+set Number of time steps = 200000
 
 # =================================================================================
 # Set the linear solver parameters
@@ -68,24 +68,10 @@ subsection Linear solver parameters: u
     set Tolerance type = ABSOLUTE_RESIDUAL
 
     # The tolerance for convergence (L2 norm)
-    set Tolerance value = 5e-3
+    set Tolerance value = 1e-3
 
     # The maximum number of linear solver iterations per solve
-    set Maximum linear solver iterations = 10000
-end
-
-# =================================================================================
-# Set the nonlinear solver parameters
-# =================================================================================
-
-set Maximum nonlinear solver iterations = 100
-
-subsection Nonlinear solver parameters: mu
-    set Tolerance type = ABSOLUTE_SOLUTION_CHANGE
-    set Tolerance value = 1e-5
-    set Use backtracking line search damping = false
-    set Constant damping value = 1.0
-    set Use Laplace's equation to determine the initial guess = false
+    set Maximum linear solver iterations = 50000
 end
 
 # =================================================================================
@@ -100,8 +86,10 @@ set Output condition =  EQUAL_SPACING
 set Number of outputs = 10
 
 # The number of time steps between updates being printed to the screen
-set Skip print steps = 1000
+set Skip print steps = 500
 
+# output file name
+set Output file name (base) = solution
 # =================================================================================
 # Set the checkpoint/restart parameters
 # =================================================================================
@@ -136,8 +124,7 @@ set Number of checkpoints = 10
 # 1.5 on the top and bottom for variable 'n' in 2D
 # set Boundary condition for variable n = ZERO_DERIVATIVE, ZERO_DERIVATIVE, DIRICHLET: 1.5, DIRICHLET: 1.5
 
-set Boundary condition for variable c = NATURAL
-set Boundary condition for variable mu = NATURAL
+
 set Boundary condition for variable n1 = NATURAL
 set Boundary condition for variable u, x component = DIRICHLET: 0.0, DIRICHLET: 0.0, NATURAL, DIRICHLET: 0.0, NATURAL, DIRICHLET: 0.0
 set Boundary condition for variable u, y component = NATURAL, DIRICHLET: 0.0, DIRICHLET: 0.0, DIRICHLET: 0.0, NATURAL, DIRICHLET: 0.0
@@ -150,23 +137,25 @@ set Boundary condition for variable u, z component = NATURAL, DIRICHLET: 0.0, NA
 # Type options currently are double, int, bool, and tensor
 
 #Chemical Energy Characteristic Constant
-set Model constant A = 0.15
+set Model constant A = 0.15, double
 
 # Mn1V  the Allen-Cahn mobility
-set Model constant Mn1V = 1.0e-6, double
+set Model constant Mn1V = 1.0e-06, double
 
 #Setting the calibration constants ks and kg
-set Model constant ks = 1.3592,double
-set Model constant kg = 0.6960,double
+set Model constant ks = 1.3592, double
+set Model constant kg = 0.6960, double
 
 #Setting characteristic interface energy density
-set Model constant G = 0.1,double
+set Model constant G = 0.1, double
+set Model constant L = 5.0e-09,double
 
-#Setting the interface width
-set model constant L = 5.0e-9,double
+# Whether or not the elastic constants depend on the order parameters
+set Model constant n_dependent_stiffness = true, bool
 
 # The elastic constants
-set Model constant CIJ_A = (0.896e11,0.6), isotropic elastic constants
+set Model constant CIJ_A = (0.77e+11,0.375), isotropic elastic constants
+set Model constant CIJ_M = (0.847e+11,0.375), isotropic elastic constants
 
 #Stress free transformation strain for martensite composition
 set Model constant sfts_linear = ((-0.1,0,0),(0,0.1,0),(0,0,0)),tensor

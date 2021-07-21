@@ -50,7 +50,7 @@ template <int dim, int degree>
 void customPDE<dim,degree>::explicitEquationRHS(variableContainer<dim,degree,dealii::VectorizedArray<double> > & variable_list,
 				 dealii::Point<dim, dealii::VectorizedArray<double> > q_point_loc) const {
 
-// --- Getting the values and derivatives of the model variables ---
+// --- Getting the values and derivatives of the model variables --- //
 
 // The first order parameter and its derivatives (names here should match those in the macros above)
 scalarvalueType n1 = variable_list.get_scalar_value(0);
@@ -60,14 +60,9 @@ scalargradType n1x = variable_list.get_scalar_gradient(0);
 vectorgradType ux = variable_list.get_vector_gradient(1);
 
 // --- Setting the expressions for the terms in the governing equations ---
-double B = 3.0*A + 12.0;
-double C = 2.0*A + 12.0;
-scalarvaluetype fV = 1.0 + constV(A/2)*n1*n1 - constV(B/3)*n1*n1*n1 + constV(C/4)*n1*n1*n1*n1;
-scalarvaluetype fn1V = constV(A)*n1 - constV(B)*n1*n1 + constV(C)*n1*n1*n1;
 
-//Calculating stiffness matrix for martensite phase
-dealii::Tensor<2,CIJ_tensor_size> CIJ_M = constV(1.1)*CIJ_A;
-
+scalarvalueType fV = constV(1.0) + constV(A/2.0)*n1*n1 - constV(B/3.0)*n1*n1*n1 + constV(C/4.0)*n1*n1*n1*n1;
+scalarvalueType fn1V = constV(A)*n1 - constV(B)*n1*n1 + constV(C)*n1*n1*n1;
 
 // Calculate the stress-free transformation strain and its derivatives at the quadrature point
 dealii::Tensor<2, dim, dealii::VectorizedArray<double> > sfts,sfts1n;
@@ -86,19 +81,20 @@ dealii::VectorizedArray<double> E2[dim][dim], S[dim][dim];
 
 for (unsigned int i=0; i<dim; i++){
 for (unsigned int j=0; j<dim; j++){
-	  E2[i][j]= constV(0.5)*(ux[i][j]+ux[j][i])- sfts1[i][j];
+	  E2[i][j]= constV(0.5)*(ux[i][j]+ux[j][i])- sfts[i][j];
 }
 }
 
 //compute stress
 //S=C*(E-E0)
 // Compute stress tensor (which is equal to the residual, Rux)
-dealii::VectorizedArray<double> CIJ_combined[CIJ_tensor_size][CIJ_tensor_size];
+dealii::VectorizedArray<double> CIJ_combined[CIJ_tensor_size][CIJ_tensor_size],CIJ_combinedn1[CIJ_tensor_size][CIJ_tensor_size];
 
 if (n_dependent_stiffness == true){
 for (unsigned int i=0; i<2*dim-1+dim/3; i++){
 	  for (unsigned int j=0; j<2*dim-1+dim/3; j++){
 		  CIJ_combined[i][j] = CIJ_A[i][j] + n1*(CIJ_M[i][j] - CIJ_A[i][j]);
+		  CIJ_combinedn1[i][j] = CIJ_M[i][j] - CIJ_A[i][j];
 	  }
 }
 computeStress<dim>(CIJ_combined, E2, S);
@@ -117,12 +113,12 @@ for (unsigned int j=0; j<dim; j++){
 }
 
 
-// Compute the other stress term in the order parameter chemical potential, heterMechACp = 0.5*Hn*(C_beta-C_alpha)*(E-E0)*(E-E0)
+// Compute the other stress term in the order parameter chemical potential, heterMechACp =-Cn1*E2*E0
 dealii::VectorizedArray<double> heterMechAC1=constV(0.0);
 dealii::VectorizedArray<double> S2[dim][dim];
 
 if (n_dependent_stiffness == true){
-	computeStress<dim>(CIJ_M-CIJ_A, E2, S2);
+	computeStress<dim>(CIJ_combinedn1, E2, S2);
 
 	for (unsigned int i=0; i<dim; i++){
 		for (unsigned int j=0; j<dim; j++){
@@ -136,8 +132,8 @@ scalargradType eqx_n1 = (constV(-userInputs.dtValue*Mn1V*kg*G*L)*n1x);
 
 // --- Submitting the terms for the governing equations ---
 
-variable_list.set_scalar_value_term_RHS(2,eq_n1);
-variable_list.set_scalar_gradient_term_RHS(2,eqx_n1);
+variable_list.set_scalar_value_term_RHS(0,eq_n1);
+variable_list.set_scalar_gradient_term_RHS(0,eqx_n1);
 
 }
 
@@ -166,14 +162,9 @@ void customPDE<dim,degree>::nonExplicitEquationRHS(variableContainer<dim,degree,
  vectorgradType ux = variable_list.get_vector_gradient(1);
 
  // --- Setting the expressions for the terms in the governing equations ---
- double B = 3.0*A + 12.0;
- double C = 2.0*A + 12.0;
- scalarvaluetype fV = 1.0 + constV(A/2)*n1*n1 - constV(B/3)*n1*n1*n1 + constV(C/4)*n1*n1*n1*n1;
- scalarvaluetype fn1V = constV(A)*n1 - constV(B)*n1*n1 + constV(C)*n1*n1*n1;
 
- //Calculating stiffness matrix for martensite phase
- dealii::Tensor<2,CIJ_tensor_size> CIJ_M = constV(1.1)*CIJ_A;
-
+ scalarvalueType fV = constV(1.0) + constV(A/2)*n1*n1 - constV(B/3)*n1*n1*n1 + constV(C/4)*n1*n1*n1*n1;
+ scalarvalueType fn1V = constV(A)*n1 - constV(B)*n1*n1 + constV(C)*n1*n1*n1;
 
  // Calculate the stress-free transformation strain and its derivatives at the quadrature point
  dealii::Tensor<2, dim, dealii::VectorizedArray<double> > sfts,sfts1n;
@@ -261,15 +252,12 @@ void customPDE<dim,degree>::equationLHS(variableContainer<dim,degree,dealii::Vec
 	dealii::Tensor<2, dim, dealii::VectorizedArray<double> > E;
 	E = symmetrize(variable_list.get_change_in_vector_gradient(1));
 
-	//Calculating stiffness matrix for martensite phase
-	 dealii::Tensor<2,CIJ_tensor_size> CIJ_M = constV(1.1)*CIJ_A;
+
 
 	// Compute stress tensor (which is equal to the residual, Rux)
 	if (n_dependent_stiffness == true){
 		dealii::Tensor<2, CIJ_tensor_size, dealii::VectorizedArray<double> > CIJ_combined;
 		CIJ_combined = CIJ_A + n1*(CIJ_M - CIJ_A);
-
-
 		computeStress<dim>(CIJ_combined, E, eqx_Du);
 	}
 	else{
